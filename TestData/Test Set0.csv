@@ -1,7 +1,0 @@
-date,raceNum,trackType,weather,trackCondition,dist,numHorses,lastRace1,pastRace1,pastTrack1,pastPos1,hName1,jName1,weight1,m1,e1,polePos1,odds1,fav1,newDist1,asr1,lsr1,lastRace2,pastRace2,pastTrack2,pastPos2,hName2,jName2,weight2,m2,e2,polePos2,odds2,fav2,newDist2,asr2,lsr2,finalrank
-1/3/2020,1,Dirt,Clear,Fast,7500,4,35,1,AQU,2,Fast Break,Lezcano/Jose,122,L,None,4,0.45,1,0,72,72,56,6,AQU,2,New Frontier,Franco/Manuel,122,L,b,3,2.3,0,0,71,71,
-1/3/2020,1,Dirt,Clear,Fast,7500,4,35,1,AQU,2,Fast Break,Lezcano/Jose,122,L,None,4,0.45,1,0,72,72,35,1,AQU,6,Tri Saint Lorenzo,Vargas/Jr./Jorge,122,L,b,2,13.9,0,0,61,61,
-1/3/2020,1,Dirt,Clear,Fast,7500,4,35,1,AQU,2,Fast Break,Lezcano/Jose,122,L,None,4,0.45,1,0,72,72,80,3,AQU,3,Ink Splotz,Brown/Dalton,122,L,bf,1,6.3,0,0,55,55,
-1/3/2020,1,Dirt,Clear,Fast,7500,4,35,1,AQU,6,Tri Saint Lorenzo,Vargas/Jr./Jorge,122,L,b,2,13.9,0,0,61,61,56,6,AQU,2,New Frontier,Franco/Manuel,122,L,b,3,2.3,0,0,71,71,
-1/3/2020,1,Dirt,Clear,Fast,7500,4,80,3,AQU,3,Ink Splotz,Brown/Dalton,122,L,bf,1,6.3,0,0,55,55,56,6,AQU,2,New Frontier,Franco/Manuel,122,L,b,3,2.3,0,0,71,71,
-1/3/2020,1,Dirt,Clear,Fast,7500,4,35,1,AQU,6,Tri Saint Lorenzo,Vargas/Jr./Jorge,122,L,b,2,13.9,0,0,61,61,80,3,AQU,3,Ink Splotz,Brown/Dalton,122,L,bf,1,6.3,0,0,55,55,
