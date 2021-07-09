@@ -1,0 +1,22 @@
+A = np.array([[3/100, 3/100, 47/150, 47/150,47/150], [1/5, 1/5, 1/5, 1/5, 1/5], [3/100, 22/25, 3/100, 3/100, 3/100], [91/200, 3/100, 91/200, 3/100, 3/100], [91/200, 3/100, 3/100, 91/200, 3/100]], dtype=complex) # Array of complex numbers
+print(A)
+print('')
+B = np.linalg.matrix_power(A, 20)
+print(B)
+print('')
+C = scipy.linalg.eig(B,left=True,right=False)[1][:,0]
+print(C)
+print('')
+D = []
+SUM2 = 0
+for x in range(len(C)):
+  D.append(abs(C[x]))
+  SUM2 = abs(C[x]) + SUM2
+
+print(D)
+print(SUM2)
+print('')
+E = []
+for x in range(len(D)): 
+  E.append(D[x]/SUM2)
+print(E)

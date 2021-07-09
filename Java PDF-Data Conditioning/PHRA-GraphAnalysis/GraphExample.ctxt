@@ -1,0 +1,19 @@
+#BlueJ class context
+comment0.target=GraphExample
+comment1.params=n
+comment1.target=Graph(int)
+comment2.params=u\ v
+comment2.target=boolean\ isConnected(int,\ int)
+comment3.params=u
+comment3.target=boolean\ hasEdges(int)
+comment4.params=u
+comment4.target=java.lang.String\ degreeDiff(int)
+comment5.params=u
+comment5.target=double\ degreeDiffAverage(int)
+comment6.params=u\ v\ w
+comment6.target=void\ addEdge(int,\ int,\ int)
+comment7.params=
+comment7.target=java.lang.String\ toString()
+comment8.params=
+comment8.target=void\ main()
+numComments=9
