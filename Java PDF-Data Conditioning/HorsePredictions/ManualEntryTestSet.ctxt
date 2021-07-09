@@ -1,0 +1,18 @@
+#BlueJ class context
+comment0.target=ManualEntryTestSet
+comment0.text=\r\n\ Write\ a\ description\ of\ class\ ManualEntryTestSet\ here.\r\n\r\n\ @author\ (your\ name)\r\n\ @version\ (a\ version\ number\ or\ a\ date)\r\n
+comment1.params=
+comment1.target=ManualEntryTestSet()
+comment2.params=
+comment2.target=void\ main()
+comment3.params=fileExt
+comment3.target=void\ run(java.lang.String)
+comment4.params=
+comment4.target=void\ runUI()
+comment5.params=
+comment5.target=void\ fillRaceDayArray()
+comment6.params=dayOfData
+comment6.target=java.util.ArrayList\ completeDocument(java.util.ArrayList)
+comment7.params=
+comment7.target=void\ writeToCSV()
+numComments=8

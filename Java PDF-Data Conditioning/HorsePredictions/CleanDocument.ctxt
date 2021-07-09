@@ -1,0 +1,16 @@
+#BlueJ class context
+comment0.target=CleanDocument
+comment0.text=\r\n\ Write\ a\ description\ of\ class\ CleanDocument\ here.\r\n\r\n\ @author\ (your\ name)\r\n\ @version\ (a\ version\ number\ or\ a\ date)\r\n
+comment1.params=
+comment1.target=CleanDocument()
+comment2.params=
+comment2.target=void\ main()
+comment3.params=fileExt
+comment3.target=void\ run(java.lang.String)
+comment4.params=lines
+comment4.target=boolean\ checkDocument(java.lang.String[])
+comment5.params=pageIndeces\ readFile\ newFile
+comment5.target=void\ removePages(java.util.ArrayList,\ java.lang.String,\ java.lang.String)
+comment6.params=newFileName
+comment6.target=void\ dueDilligence(java.lang.String)
+numComments=7
