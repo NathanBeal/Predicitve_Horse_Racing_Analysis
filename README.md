@@ -8,11 +8,11 @@ My fascination for an algorithmic and machine learning approach to horse race be
 
 All data for this project was sourced from Equibase (2) and tediously downloaded. A PDF was downloaded for each day of racing for two racetracks, Aqueduct and Saratoga, spanning the course of several years. Large PDF files were constructed with a PDF combiner (3) to be conditioned for a PDF scrapping Java program. The Java program was built off the Apache PDFBox (4) library which scrapped each line of a PDF, line-by-line, to grab the large quantities of raw data available on each race. The rest of the program is centered around the organization of the data collected for each jockey and horse's placement. 
 
-Part 2: Machine Learning & Tabular Modeling
+**Part 2: Machine Learning & Tabular Modeling**
 
-Part 3: Weighting Data
+**Part 3: Weighting Data**
 
-Part 4: Making Bets 
+**Part 4: Making Bets **
 
 **References**
 
