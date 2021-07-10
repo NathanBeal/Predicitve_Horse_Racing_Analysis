@@ -17,6 +17,9 @@ All data for this project was sourced from Equibase (2) and tediously downloaded
 **References**
 
 (1) https://www.bloomberg.com/news/features/2018-05-03/the-gambler-who-cracked-the-horse-racing-code
+
 (2) https://www.equibase.com/
+
 (3) https://combinepdf.com/
+
 (4) https://pdfbox.apache.org/
