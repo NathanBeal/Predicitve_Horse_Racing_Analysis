@@ -12,7 +12,7 @@ All data for this project was sourced from Equibase (2) and tediously downloaded
 
 **Part 3: Weighting Data**
 
-**Part 4: Making Bets **
+**Part 4: Making Bets**
 
 **References**
 
