@@ -23,3 +23,5 @@ All data for this project was sourced from Equibase (2) and tediously downloaded
 (3) https://combinepdf.com/
 
 (4) https://pdfbox.apache.org/
+
+(X) https://projects.ncsu.edu/crsc//reports/ftp/pdf/crsc-tr06-19.pdf
