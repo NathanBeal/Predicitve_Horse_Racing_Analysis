@@ -9,7 +9,7 @@ def main():
 	print('Number of Pages: ', pdf_reader.numPages)
 
 	init_csv(list_of_variables);
-	for i in range(4,5):
+	for i in range(5,6):
 		racing_data = read_race_data(pdf_reader.getPage(i).extractText().split())
 		write_to_csv(racing_data);
 
@@ -67,30 +67,34 @@ def record_racing_data(lines, diagnosis):
 
 def organize_race_array(race_array, diagnosis = False):
 	for i in range(1,len(race_array)):
+		# INITS
 		edited_array = [];
-
 		horse_name = jockey_name = weight = med = equip = pole_position = '';
 		odds = comments = ''; favorite = 1;
-		if(list(race_array[i][0])[0] == '-'): #first race data
-			racer_data_str = race_array[i][0].split('---')[1]
-			edited_array = ['-', '-', '-', '-'];
 
-			print(racer_data_str)
-			try: horse_name, jockey_name, weight, med, equip, pole_position = parse_racer_data(racer_data_str, diagnosis);
-			except Exception as e: print(); print(35*'#');print('ERROR: parse_racer_data', e); print(racer_data_str); print(35*'#'); print()
+		race_array = catch_line_reading_isssues(race_array);
+		# HORSE'S FIRST RACE
+		if(list(race_array[i][0])[0] == '-'): #first race data
+			edited_array = ['-', '-', '-', '-'];
+			print('ALL LINE DATA: ', race_array[i]) #MUTE HERE
+
+			race_array[i] = organize_line_data(race_array[i], FIRST_RACE = True)
+
+			horse_name, jockey_name, weight, med, equip, pole_position = parse_racer_data(race_array[i].pop(0));
 
 			try: odds, favorite, comments = parse_racer_data_2(race_array[i].pop(), diagnosis);
 			except Exception as e: print(); print(35*'#');print('ERROR: parse_racer_data_2', e); print(racer_data_str); print(35*'#'); print()
 
-		else: # Not First Race Data
+		else: #NOT HORSE'S FIRST RACE
+			print('ALL LINE DATA: ', race_array[i]) #MUTE HERE
 			for j in range(len(list_of_variables)):
 				if(list_of_variables[j] == 'LAST_DATE'):     edited_array.append(race_array[i][0])
 				if(list_of_variables[j] == 'LAST_RACE_NUM'): edited_array.append(race_array[i][1])
 				if(list_of_variables[j] == 'LAST_TRACK'):    edited_array.append(race_array[i][2])
 				if(list_of_variables[j] == 'LAST_FINISH'):   edited_array.append(race_array[i][3])
 
-
-			try: horse_name, jockey_name, weight, med, equip, pole_position = parse_racer_data(race_array[i][4], diagnosis);
+			#print('RACE: ', race_array[i]) #MUTE HERE
+			try: horse_name, jockey_name, jockey_weight, med, equip, pole_position = parse_racer_data(race_array[i][4]);
 			except Exception as e: print(35*'#');print('ERROR: Issue in parse_racer_data: ', e); print('STR: ', race_array[i][4]); print(race_array[i]);print(35*'#');
 			try: odds, favorite, comments = parse_racer_data_2(race_array[i].pop(), diagnosis);
 			except Exception as e: print(35*'#');print('ERROR: Issue in parse_racer_data_2: ', e); print('STR: ', race_array[i]); print(35*'#');
@@ -112,11 +116,14 @@ def organize_race_array(race_array, diagnosis = False):
 
 	return race_array;
 
-def parse_racer_data(data_str, diagnosis = False):
+#
+# POLE POSITION, HORSE NAME, JOCKEY NAME, WEIGHT, MEDICINE, EQUIPMENT
+#
+def parse_racer_data(data_str):
+	# print('data_str: ', data_str) #MUTE HERE
 	# Inits
 	horse_name = jockey_name = weight = med = equip = pole_position = '';
 	data_str = list(data_str);
-	print('here ', data_str)
 
 	# Extract Pole Position
 	try: pole_position = data_str[0]; data_str.remove(pole_position);
@@ -137,15 +144,16 @@ def parse_racer_data(data_str, diagnosis = False):
 	try: 
 		for i in range (data_str.index(')')+1, data_str.index(')')+4): 
 			weight += data_str[i];
-			print(data_str[i])
 	except Exception as e: print('weight: ', e); print(data_str)
 	
 
 	return horse_name, jockey_name, weight, med, equip, pole_position
-
+#
+# ODDS, FAVORITE, COMMENTS
+#
 def parse_racer_data_2(data_str, diagnosis = False):
 	odds = comments = ''; favorite = 1;
-	print(data_str)
+	#print(data_str) #MUTE HERE
 	data_str = list(data_str);
 	for i in range(data_str.index('.')-2, data_str.index('.')+3): 
 		if(ord(data_str[i]) > 45 and ord(data_str[i]) < 58): odds += data_str[i];
