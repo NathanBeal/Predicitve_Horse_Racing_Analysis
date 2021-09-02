@@ -6,6 +6,9 @@ NAME_SEPARATOR = '/';
 FILENAME = 'Data.csv'
 SHUFFLE_DATA = False;
 
+#list_of_variables = ['LAST_DATE', 'LAST_RACE_NUM', 'LAST_TRACK', 'LAST_FINISH', 'HORSE_NAME', 'JOCKEY_NAME', 'WEIGHT', 'MED', 'EQUIP', 'POLE_POS', 'DIST_AHEAD', 'PLACE', 'ODDS', 'FAVORITE', 'COMMENTS']
+list_of_variables = ['LAST_DATE', 'LAST_RACE_NUM', 'LAST_TRACK', 'LAST_FINISH', 'PLACE', 'HORSE_NAME', 'JOCKEY_NAME', 'WEIGHT', 'POLE_POS', 'ODDS', 'FAVORITE']
+
 
 # Retrieving Date and Race Number
 def record_date_race_num(lines):
@@ -44,49 +47,30 @@ def format_race_num(raw_race_num_str):
 # ISSUE: AQU 3/15/20 - Race 6
 #
 def catch_line_reading_isssues(race_arr):
-	new_race_arr = []; new_race_arr.append(race_arr[0].pop(0));
+	RTN_FLAG = True;
+	for i in range(len(race_arr)):
+		if(len(list(race_arr[i][0])) < 3): RTN_FLAG = False;
+	if(RTN_FLAG): return race_arr;
+
+	new_race_arr = []; temp_line = race_arr.pop(0);
 	bad_split_count_index  = [];
 
-	for i in range(len(race_arr)):
-		print(race_arr[i])
 	race_arr.reverse()
-	print()
-	for i in range(len(race_arr)):
-		print(race_arr[i])
 
 	while len(race_arr) > 0:
-		# Violates rule
-		#print(new_race_arr)
-
-		if(len(list(race_arr[0][-1])) < 3): # three characters being minimum length of FR '---'
-			print('BAD: ', race_arr[0])
-			for j in range(len(race_arr[1])):
-				race_arr[0].append(race_arr[1][j])
-
-			new_race_arr.append(race_arr.pop())
-			race_arr.pop()
+		if(len(list(race_arr[0][0])) >= 3):
+			#print('GOOD: ', race_arr[0])
+			new_race_arr.append(race_arr.pop(0))
 		else:
-			print('GOOD: ', race_arr[0])
-			new_race_arr.append(race_arr.pop())
+			#print('BAD: ', race_arr[0])
+			for j in range(len(race_arr[0])):
+	 			race_arr[1].append(race_arr[0][j])
 
-	# print(new_race_arr)
+			race_arr.pop(0)
+			new_race_arr.append(race_arr.pop(0))
 
-	# while len(race_arr) > 0:
-	# 	# Violates rule
-	# 	#print(new_race_arr)
-
-	# 	if(len(list(race_arr[0][0])) < 3): # three characters being minimum length of FR '---'
-	# 		print('BAD: ', race_arr[0])
-	# 		for j in range(len(race_arr[1])):
-	# 			race_arr[0].append(race_arr[1][j])
-
-	# 		new_race_arr.append(race_arr.pop(0))
-	# 		race_arr.pop(0)
-	# 	else:
-	# 		print('GOOD: ', race_arr[0])
-	# 		new_race_arr.append(race_arr.pop(0))
-
-	# # print(new_race_arr)
+	new_race_arr.reverse(); new_race_arr.insert(0, temp_line);
+	# for i in range(len(new_race_arr)): print(new_race_arr[i]); print()
 	return new_race_arr;
 	
 
@@ -96,7 +80,6 @@ def catch_line_reading_isssues(race_arr):
 def organize_line_data(line_data_array, FIRST_RACE = False):
 	if(FIRST_RACE):
 		line_data_array[0] = line_data_array[0].split('---')[1] #Pulls --- off of it
-		#print(line_data_array)
 
 		if(len(line_data_array) == 1):
 			split_arr = line_data_array[0].split(')');
@@ -111,13 +94,55 @@ def organize_line_data(line_data_array, FIRST_RACE = False):
 
 		try: line_data_array.remove('»')
 		except Exception as e: count = 1;
+		try: line_data_array.remove('½')
+		except Exception as e: count = 1;
+
+		# Find where the ')' Character is
+		char_index = -1;
+		for i in range(len(line_data_array)):
+			try:
+				line_data_array[i].index(')');
+				char_index = i;
+			except Exception as e: count = 0;
+
+		# Detaching pole pos from name
+		if(ord(line_data_array[char_index][0]) >= 48 and ord(line_data_array[char_index][0]) <= 57):
+			line_data_array.insert(char_index,line_data_array[char_index][0])
+			line_data_array[char_index+1] = line_data_array[char_index+1][1:]
+			char_index += 1;
 
 		# Tacks weight and medicine onto back of string if not present
 		if(list(line_data_array[0])[-1] == ')'): 
 			line_data_array[0] += line_data_array.pop(1); 
 			line_data_array[0] += line_data_array.pop(1);
 
-		return line_data_array;
+		return line_data_array, char_index;
+	else:
+		try: line_data_array.remove('»')
+		except Exception as e: count = 1;
+		try: line_data_array.remove('½')
+		except Exception as e: count = 1;
+
+		# Find where the ')' Character is
+		char_index = -1;
+		for i in range(len(line_data_array)):
+			try:
+				line_data_array[i].index(')');
+				char_index = i;
+			except Exception as e: count = 0;
+
+		# Detaching pole pos from name
+		if(ord(line_data_array[char_index][0]) >= 48 and ord(line_data_array[char_index][0]) <= 57):
+			line_data_array.insert(char_index,line_data_array[char_index][0])
+			line_data_array[char_index+1] = line_data_array[char_index+1][1:]
+			char_index += 1;
+
+		if(list(line_data_array[char_index])[-1] == ')'):
+			line_data_array[char_index] += line_data_array.pop(char_index+1); 
+			line_data_array[char_index] += line_data_array.pop(char_index+1);
+			
+		return line_data_array, char_index
+
 
 
 
