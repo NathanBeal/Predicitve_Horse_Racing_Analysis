@@ -81,11 +81,6 @@ with open("python_logo.png",'wb') as f:
 
 import requests
 urls = ['https://www.equibase.com/static/chart/pdf/SAR090121USA.pdf']
-output_dir = 'C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis'
+output_dir = "C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis"
 
-for url in urls:
-	response = requests.get(url);
-	if(response.status_code == 200):
-		file_path = os.path.join(output_dir, os.path.basename(url))
-		with open(file_path, 'wb') as f:
-			f.write(response.content)
+response = requests.get(urls[0]);
