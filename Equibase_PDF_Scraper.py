@@ -83,4 +83,5 @@ import requests
 urls = ['https://www.equibase.com/static/chart/pdf/SAR090121USA.pdf']
 output_dir = "C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis"
 
-response = requests.get(urls[0]);
+req = requests.get(urls[0]);
+filename = req.url()

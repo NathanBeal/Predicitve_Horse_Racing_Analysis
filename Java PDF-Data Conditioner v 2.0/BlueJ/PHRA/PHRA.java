@@ -36,13 +36,7 @@ public class PHRA
     //Most Important ArryaList
     ArrayList<ArrayList<String>> formattedData = new ArrayList<ArrayList<String>>();
     boolean toggleFinalRank = true;
-    /**
-     * Constructor for objects of class PHRA
-     */
-    public PHRA()
-    {
-        // initialise instance variables
-    }
+    public PHRA(){}
 
     public static void main() throws IOException 
     {
@@ -54,8 +48,7 @@ public class PHRA
     {
         //File myFile = new File("src/mai/resources/wwii.pdf");
         String fileExt = "3-15-20";
-        File myFile = new File("C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data\3-15-20 AQU.pdf");
-        
+        File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
         String text;
         String[] pages;
         int numPages;
@@ -96,14 +89,18 @@ public class PHRA
             currentRace = pages[i];
             String[] lines = currentRace.split("\n");
             
+            for (int j = 0; j < lines.length; j++)
+            {
+                System.out.println(lines[j]);
+            }
             
-            //Race Specific Data/General Data
+            
+            //General Data
             date = retrieveDate(lines);
             raceNum = raceNumber(lines);
             String trackType = trackType(lines);
             String weather = weather(lines);
             String distance = distance(lines);                      //True Double
-            //String numHorses = sNumOfHorses;
             String trackCondition = trackCondition(lines);  
             
             
@@ -111,7 +108,7 @@ public class PHRA
             generalData.add(date); generalData.add(raceNum); generalData.add(trackType);
             generalData.add(weather); generalData.add(trackCondition); generalData.add(distance);
             
-            ArrayList<ArrayList<String>> racerData = racerData(lines);
+            ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
             String numHorses = sNumOfHorses; generalData.add(numHorses);
             
             //int numOfHorses = jockeys.length; System.out.println(numOfHorses);
@@ -343,15 +340,10 @@ public class PHRA
         for(int i = lIndex; i < lIndex+15;i++)
         {
             dataLinePieces = lines[i].split(" ");
-            //System.out.println(lines[i]);
             for(int j = 0; j < dataLinePieces.length; j++)
             {
-                //System.out.println(dataLinePieces[j]);
                 if(dataLinePieces[j].equals("Fractional"))
                 {
-                    //Offset of one
-                    //System.out.println("FLAGGED");
-                    //System.out.println(i); System.out.println(lines[i]);
                     uIndex = i-1;
                 }
             }
