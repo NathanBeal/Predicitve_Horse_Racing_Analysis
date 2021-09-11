@@ -47,9 +47,12 @@ public class DATA_ORGANIZATION
     public void run() throws IOException 
     {
         init_dictionary();
-        //File myFile = new File("src/mai/resources/wwii.pdf");
-        String fileExt = "3-15-20";
-        File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        
+        //Surface
+        //File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        //Laptop
+        File myFile = new File("C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        
         String text;
         String[] pages;
         int numPages;
