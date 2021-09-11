@@ -72,6 +72,7 @@ public class DATA_ORGANIZATION
             //Temp ArrayList to collect Values of each race/page
             ArrayList<String> tempArr = new ArrayList<String>();
             ArrayList<ArrayList<String>> DATA = new ArrayList<ArrayList<String>>();
+            String[] dist_tr = new String[2];
             
             currentRace = pages[i];
             String[] lines = currentRace.split("\n");
@@ -81,21 +82,15 @@ public class DATA_ORGANIZATION
             sb.append("DATE:" + date + ","); sb.append('\n'); 
             
             //Race Track Data
-            raceNum = raceNumber(lines);
-            sb.append("Race Num:" + raceNum + ",");
-            String trackType = trackType(lines);
-            sb.append("Track Type:" + trackType + ",");
-            String weather = weather(lines);
-            sb.append("Weather:" + weather + ",");
-            String distance = distance(lines);                      //True Double
-            sb.append("Dist:" + distance + ",");
-            String trackCondition = trackCondition(lines);
-            sb.append("Condition:" + trackCondition + ",");
+            sb.append("Race Num:" + raceNumber(lines) + ",");
+            sb.append("Track Type:" + trackType(lines) + ",");
+            sb.append("Weather:" + weather(lines) + ",");
+            dist_tr = distance_trackRecord(lines);                      //True Double
+            sb.append("Dist:" + dist_tr[0] + ",");
+            sb.append("Condition:" + trackCondition(lines) + ",");
+            sb.append("Track Record:" + dist_tr[1] + ",");
+            sb.append("Final Time:" + final_time(lines) + ",");
             sb.append('\n'); 
-            
-            ArrayList<String> generalData = new ArrayList<String>();
-            generalData.add(date); generalData.add(raceNum); generalData.add(trackType);
-            generalData.add(weather); generalData.add(trackCondition); generalData.add(distance);
             
             ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
             for (int j = 0; j < racerData.size(); j++)
@@ -104,7 +99,7 @@ public class DATA_ORGANIZATION
                 DATA.add(racerData.get(j));
             }
             
-            String numHorses = sNumOfHorses; generalData.add(numHorses);
+            String numHorses = sNumOfHorses;
             writeToCSV(DATA);
         } 
         System.out.println("Finished Writing to CSV");
@@ -117,9 +112,8 @@ public class DATA_ORGANIZATION
         try (PrintWriter writer = new PrintWriter(new File("DATA.csv"))) 
         {
             sb.append("Last_Race,"); sb.append("Past_Race,"); sb.append("Past_Track,");  sb.append("Past_Pos,"); sb.append("Pgm,");
-            sb.append("Horse,"); sb.append("Jockey,");  sb.append("Weight,"); sb.append("M/E,"); sb.append("PP,");sb.append("Odds,");sb.append("Fav,");
-            sb.append("Comments,"); 
-            sb.append('\n');
+            sb.append("Horse,"); sb.append("Jockey,");  sb.append("Weight,"); sb.append("M/E,"); sb.append("PP,"); sb.append("Finish,");
+            sb.append("Odds,"); sb.append("Fav,"); sb.append("Comments,"); sb.append('\n');
             
             for(int i = 0; i < DATA.size(); i++)
             {
@@ -182,16 +176,20 @@ public class DATA_ORGANIZATION
         String[] jockeys = new String[numOfHorses];
         
         String timeSinceLR = ""; String[] pastPerf_pgm = new String[4]; 
-        String[] horseAndJockey = new String[2]; String weight = ""; String polePosition = ""; 
+        String[] horseAndJockey = new String[3]; String weight = ""; String polePosition = ""; 
         String[] odds_fav_com = new String[3];
+        String[] weight_arr = new String[2];
+        String[] polePos_ME = new String[2];
+        String finish = "";
         for(int i = lIndex; i < uIndex+1; i++)
         {
             ArrayList<String> indivHorse = new ArrayList<String>();
             dataLinePieces  = lines[i].split(" ");
             pastPerf_pgm    = pastPerf_pgm(dataLinePieces);   
-            horseAndJockey  = horseAndJockey(dataLinePieces);
-            weight          = weight(dataLinePieces); 
-            polePosition    = polePosition(dataLinePieces); 
+            horseAndJockey  = horseAndJockey(dataLinePieces); //Slapped on ')' index, easier for pole pos and M/E
+            weight_arr      = weight(dataLinePieces); 
+            polePos_ME      = polePos_ME(dataLinePieces, weight_arr[1]); 
+            finish          = finish(dataLinePieces);
             odds_fav_com    = odds_fav_com(dataLinePieces);
 
             String last_date_raced = "";
@@ -203,11 +201,11 @@ public class DATA_ORGANIZATION
             }
             indivHorse.add(last_date_raced); indivHorse.add(pastPerf_pgm[0]); indivHorse.add(pastPerf_pgm[1]);
             indivHorse.add(pastPerf_pgm[2]); indivHorse.add(pastPerf_pgm[3]); indivHorse.add(horseAndJockey[0]); indivHorse.add(horseAndJockey[1]);
-            indivHorse.add(weight); indivHorse.add("M/E"); indivHorse.add(polePosition); indivHorse.add(odds_fav_com[0]); indivHorse.add(odds_fav_com[1]); indivHorse.add(odds_fav_com[2]);
+            indivHorse.add(weight_arr[0]); indivHorse.add(polePos_ME[1]); indivHorse.add(polePos_ME[0]); indivHorse.add("FINISH"); 
+            indivHorse.add(odds_fav_com[0]); indivHorse.add(odds_fav_com[1]); indivHorse.add(odds_fav_com[2]);
             
             horses.add(indivHorse);
         }
-        
         
         return horses;
     }
@@ -323,15 +321,30 @@ public class DATA_ORGANIZATION
         return odds_fav_com;
     }
     
-    public String polePosition(String[] dataPieces)
+    public String[] polePos_ME(String[] dataPieces, String ind)
     {
         String polePosition = "ERROR";
+        String me = "";
+        int me_index = Integer.valueOf(ind);
         int index = -1;
         
-        for(int i = 3; i < dataPieces.length-1; i++)
+        // M/E
+        for(int i = me_index; i <me_index+4; i++)
         {
             String[] comps = dataPieces[i].split("");
-            //System.out.println(dataPieces[i]);
+            int asciiVal = (int) comps[0].charAt(0);
+            //
+            if(asciiVal >= 65 && asciiVal <= 90 || asciiVal >= 97 && asciiVal <= 122)
+            {
+                me += dataPieces[i];
+            }
+        }
+        if(me.equals("")) me = "N/A";
+        
+        
+        for(int i = me_index; i <me_index+4; i++)
+        {
+            String[] comps = dataPieces[i].split("");
             
             if(dataPieces[i].equals("b") || dataPieces[i].equals("f") || dataPieces[i].equals("h") ||
             dataPieces[i].equals("bf") || dataPieces[i].equals("L") || dataPieces[i].equals("-")
@@ -340,18 +353,17 @@ public class DATA_ORGANIZATION
             )
             {
                 //System.out.println("FLAG");
-                index = i + 1;
+                index = i;
             }
         }
-        //System.out.println("Pole Position: " + dataPieces[index]);
         
-        String sPolePos = dataPieces[index];
+        String sPolePos = dataPieces[index+1];
         //System.out.println(sPolePos);
         if(Integer.parseInt(sPolePos) > 15)
         {
-            return showError("ERROR: polePosition() - POLEPOS differs from variables " + sPolePos);
+            return new String[] {showError("ERROR: polePosition() - POLEPOS differs from variables " + sPolePos), "ERR"};
         }else{
-            return sPolePos;
+            return new String[] {sPolePos, me};
         }
     }
     
@@ -419,10 +431,10 @@ public class DATA_ORGANIZATION
             return new String[] {"ERR", "ERR"};
         }
         
-        return new String[] {hName, jName};
+        return new String[] {hName, jName, (jIndex1+2)+""};
     }
     
-    public String weight(String[] dataPieces)
+    public String[] weight(String[] dataPieces)
     {
         int[] weightAndIndex = new int[] {-1,-1};
         int wIndex = -1;
@@ -448,14 +460,12 @@ public class DATA_ORGANIZATION
             }else{
                 if(cWSplit.length >= 4)
                 {
-                    return showError("ERROR: CRITICAL - WEIGHT");
+                    return new String[] {showError("ERROR: CRITICAL - WEIGHT: " + cWeight), "-1"};
                 }
             }
         }
-        //System.out.print(cWeight);
-        
-        //return Integer.valueOf(cWeight);
-        return cWeight;
+
+        return new String[] {cWeight, wIndex+""};
     }
     
     public String[] pastPerf_pgm(String[] arr)
@@ -502,10 +512,11 @@ public class DATA_ORGANIZATION
         return showError("ERROR: Track type not recognized: " + trackType);
     }
     
-    public String distance(String[] lines)
+    public String[] distance_trackRecord(String[] lines)
     {
         int index = -1;
-        String[] dataLinePieces;
+        String track_record = "";
+        String[] dataLinePieces, track_record_pieces;
         for(int i = 0; i < 20; i++)
         {
             dataLinePieces = lines[i].split(" ");
@@ -522,6 +533,14 @@ public class DATA_ORGANIZATION
         }
         
         //System.out.println(lines[index]);
+        track_record_pieces = lines[index].split("Record");
+        track_record_pieces = track_record_pieces[1].split("-");
+        track_record_pieces = track_record_pieces[1].split(" ");
+        track_record = track_record_pieces[1];
+        
+        //System.out.println("TR:" + track_record);
+        
+        //DISTANCE
         dataLinePieces = lines[index].split(" On The ");
         dataLinePieces = dataLinePieces[0].split(" ");
         
@@ -539,14 +558,14 @@ public class DATA_ORGANIZATION
         /* Furlongs -> Yards */
         /* 1 Furlong = 1/8 Mile */
         /* 1 Furlong = 220 yards*/
-        if(distance.equals("Four And One Half Furlongs")) return "990";
-        if(distance.equals("Five And One Half Furlongs")) return "1210";
-        if(distance.equals("Six Furlongs")) return "1320";
-        if(distance.equals("Six And One Half Furlongs")) return "1430";
-        if(distance.equals("Seven Furlongs")) return "1540";
-        if(distance.equals("One Mile")) return "1760";
+        if(distance.equals("Four And One Half Furlongs")) return new String[] {"990", track_record};
+        if(distance.equals("Five And One Half Furlongs")) return new String[] {"1210", track_record};
+        if(distance.equals("Six Furlongs")) return new String[] {"1310", track_record};
+        if(distance.equals("Six And One Half Furlongs")) return new String[] {"1430", track_record};
+        if(distance.equals("Seven Furlongs")) return new String[] {"1540", track_record};
+        if(distance.equals("One Mile")) return new String[] {"1760", track_record};
         
-        return showError("ERROR: Non registered distance of: '" + distance +"'");
+        return new String[] {showError("ERROR: Non registered distance of: '" + distance +"'"), "ERR"};
     }
     
     public String raceNumber(String[] lines)
@@ -572,17 +591,8 @@ public class DATA_ORGANIZATION
     
     public String weather(String[] lines)
     {
-        int index = -1;
         String[] dataLinePieces;
-        for(int i = 0; i < lines.length-1; i++)
-        {
-            dataLinePieces = lines[i].split(" ");
-            if(dataLinePieces[0].equals("Weather:"))
-            {
-                //System.out.println(dataLinePieces[0]);
-                index = i;
-            }
-        }
+        int index = find_index(lines, "Weather:");
         
         if(index == -1)
         {
@@ -594,17 +604,8 @@ public class DATA_ORGANIZATION
     
     public String trackCondition(String[] lines)
     {
-        int index = -1;
         String[] dataLinePieces;
-        for(int i = 0; i < lines.length-1; i++)
-        {
-            dataLinePieces = lines[i].split(" ");
-            if(dataLinePieces[0].equals("Weather:"))
-            {
-                //System.out.println(dataLinePieces[0]);
-                index = i;
-            }
-        }
+        int index = find_index(lines, "Weather:");
         
         dataLinePieces = lines[index].split(" "); //Splits Line into words seperated by " "
         dataLinePieces = dataLinePieces[dataLinePieces.length-1].split(" ");
@@ -643,6 +644,65 @@ public class DATA_ORGANIZATION
         }else{
             return showError("ERROR: Could not characterize date correctly");
         }
+    }
+    
+    public String finish(String[] data_pieces)
+    {
+        int index = -1;
+        String isFavorited = "N";
+        for(int i = 2; i < data_pieces.length; i++)
+        {
+            String[] tempVal = ((data_pieces[i]).split(""));
+            for(int j = 0; j < tempVal.length-1; j++)
+            {
+                if( (tempVal[j]).equals(".") )
+                {
+                    index = i-2;
+                }
+            }
+        }
+        
+        //ALL WORKD IS HERE
+        for(int i = index; i < index+2; i++)
+        {
+            System.out.println(data_pieces[i]);
+        }
+        
+        return "";
+    }
+    
+    public String final_time(String[] lines)
+    {
+        int index = find_index(lines, "Fractional");
+        String[] final_time_pieces = lines[index].split("Final Time:");
+        String final_time = final_time_pieces[1].split(" ")[1];
+        final_time_pieces = final_time.split("");
+        
+        final_time = "";
+        for(int i = 0; i < final_time_pieces.length; i++)
+        {
+            int asciiVal = final_time_pieces[i].charAt(0);
+            if(asciiVal >= 48 && asciiVal <= 58  || asciiVal == 46)  final_time += final_time_pieces[i];
+        }
+        
+        return final_time;
+    }
+    
+    public int find_index(String[] lines, String keyword)
+    {
+        int index = -1;
+        String[] dataLinePieces;
+        for(int i = 0; i < lines.length-1; i++)
+        {
+            dataLinePieces = lines[i].split(" ");
+            //System.out.println(dataLinePieces[0]);
+            if(dataLinePieces[0].equals(keyword))
+            {
+                return i;
+            }
+        }
+        
+        return index;
     }
     
     public void init_dictionary()
