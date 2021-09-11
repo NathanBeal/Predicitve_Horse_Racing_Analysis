@@ -13,6 +13,21 @@ public class DATA_ORGANIZATION
     String date, raceNum;
     String sNumOfHorses;
     
+    //Performance Evaluators
+    int races_recorded,pages_removed = 0;
+    
+    //CONSTANTS*****
+    int numberOfDesiredRaces = 100;    
+    int didNotFinishPenalty = 5;
+    int firstRaceSpeedValue = 45;
+    double totalDistBehindWeight = 1.2;
+    double offsetWeight = 5;
+    int numberOfRacesToAverage = 4; //Number of races use in the rolling ave calculation for avespeed
+    int newDistRaceMinimum = 4;
+    int newDistMinimum = 3;
+    double totalDistBehind = 0.0;
+    
+    
     //Needed for output
     StringBuilder sb = new StringBuilder();
     Map<String, String> dictionary = new HashMap<String, String>();
@@ -77,30 +92,33 @@ public class DATA_ORGANIZATION
             currentRace = pages[i];
             String[] lines = currentRace.split("\n");
             
-            //Date
-            date = retrieveDate(lines);
-            sb.append("DATE:" + date + ","); sb.append('\n'); 
-            
-            //Race Track Data
-            sb.append("Race Num:" + raceNumber(lines) + ",");
-            sb.append("Track Type:" + trackType(lines) + ",");
-            sb.append("Weather:" + weather(lines) + ",");
-            dist_tr = distance_trackRecord(lines);                      //True Double
-            sb.append("Dist:" + dist_tr[0] + ",");
-            sb.append("Condition:" + trackCondition(lines) + ",");
-            sb.append("Track Record:" + dist_tr[1] + ",");
-            sb.append("Final Time:" + final_time(lines) + ",");
-            sb.append('\n'); 
-            
-            ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
-            for (int j = 0; j < racerData.size(); j++)
+            if(checkDocument(lines))//True if document has data
             {
-                System.out.println(racerData.get(j));
-                DATA.add(racerData.get(j));
+                //Date
+                date = retrieveDate(lines);
+                sb.append("DATE:" + date + ","); sb.append('\n'); 
+                
+                //Race Track Data
+                sb.append("Race Num:" + raceNumber(lines) + ",");
+                sb.append("Track Type:" + trackType(lines) + ",");
+                sb.append("Weather:" + weather(lines) + ",");
+                dist_tr = distance_trackRecord(lines);                      //True Double
+                sb.append("Dist:" + dist_tr[0] + ",");
+                sb.append("Condition:" + trackCondition(lines) + ",");
+                sb.append("Track Record:" + dist_tr[1] + ",");
+                sb.append("Final Time:" + final_time(lines) + ",");
+                sb.append('\n'); 
+                
+                ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
+                for (int j = 0; j < racerData.size(); j++)
+                {
+                    System.out.println(racerData.get(j));
+                    DATA.add(racerData.get(j));
+                }
+                
+                String numHorses = sNumOfHorses;
+                writeToCSV(DATA);
             }
-            
-            String numHorses = sNumOfHorses;
-            writeToCSV(DATA);
         } 
         System.out.println("Finished Writing to CSV");
         //System.out.println("Number of Races Processed: " + totalRacesProcessed);
@@ -210,11 +228,39 @@ public class DATA_ORGANIZATION
         return horses;
     }
     
+    public boolean checkDocument(String[] lines)
+    {
+        boolean firstLineBool = false;
+        boolean tripOne = false;
+        int dashCount = 0;
+        String firstLine = lines[0];
+        String[] firstLineSegs = firstLine.split(" ");
+        for(int i = 0; i < firstLineSegs.length; i++)
+        {
+            //System.out.print(firstLineSegs[i] + ",");
+            if(firstLineSegs[i].equals("Race"))
+            {
+                tripOne = true;
+            }
+            if(firstLineSegs[i].equals("-"))
+            {
+                dashCount++;
+            }
+        }
+        if(dashCount >= 2 && tripOne == true)
+        {
+            return true;
+        }
+        pages_removed++;
+        return false;
+    }
+    
     public String[] odds_fav_com(String[] dataPieces)
     {
         String[] odds_fav_com = new String[3];
         int oddsIndex = -1;
         String isFavorited = "N";
+        
         
         for(int i = 2; i < dataPieces.length; i++)
         {
@@ -504,7 +550,7 @@ public class DATA_ORGANIZATION
         
         //Checks Track Type
         String trackType = dataLinePieces[0];
-        if(trackType.equals("Dirt") || trackType.equals("Turf") || trackType.equals("Outer"))
+        if(trackType.equals("Dirt") || trackType.equals("Turf") || trackType.equals("Outer") || trackType.equals("Inner") || trackType.equals("Hurdle"))
         {
             return trackType;
         }
@@ -669,6 +715,314 @@ public class DATA_ORGANIZATION
         }
         
         return "";
+    }
+    
+    public double calculateSPRAT(String[] lines, double place, int lBound, int hBound)
+    {
+        //System.out.println("Time Differ: " + finalTimeTrackRecordDiff);
+        String[] numOfItems = (lines[lBound-1]).split(" PP ");
+        numOfItems = numOfItems[1].split(" Odds");
+        numOfItems = numOfItems[0].split(" ");
+        
+        String dist = "";
+        
+        if(numOfItems.length == 4 ||  numOfItems.length == 5 || numOfItems.length == 6)//&& numOfItems[3].equals("Str"))
+        {
+            //System.out.print(lines[lBound+(int)place-1]);
+            String[] finishCall = lines[lBound+(int)place-1].split("");
+            int indexBracket = -1;
+            int indexPeriod = -1;
+            for(int i = 0; i < finishCall.length-1; i++)
+            {
+                if(finishCall[i].equals("."))
+                {
+                    indexPeriod= i+3;
+                }
+            }
+            
+            for(int i = 0; i < finishCall.length-1; i++)
+            {
+                if(finishCall[i].equals(")"))
+                {
+                    indexBracket = i+2;
+                    break;
+                }
+            }
+            String substr = lines[lBound+(int)place-1].substring(indexBracket,indexPeriod);
+            finishCall = substr.split(" ");
+            
+            int indexSecondSpace = -1; int countSecondSpace = 0;
+            String dater = "" + finishCall[finishCall.length-3] + " " 
+            + finishCall[finishCall.length-2];
+            //System.out.println("THIS: " + dater);
+            if(!finishCall[finishCall.length-2].equals("---"))
+            {
+                String firstHalf = "" + finishCall[finishCall.length-3];
+                String secondHalf = "" + finishCall[finishCall.length-2];
+                boolean firstHalfDiv = false; 
+                int indexFirstHalfDivCount = 0; int indexFirstHalfExpreshCount = 0;
+                boolean secondHalfDiv = false; boolean secondHalfExpresh = false;
+                int indexSecondHalfDivCount = 0;  int indexSecondHalfExpreshCount = 0;
+                for(int i = 0; i < firstHalf.split("").length-1; i++)
+                {
+                    if(firstHalf.split("")[i].equals("/"))
+                    {
+                        firstHalfDiv = true;
+                        indexFirstHalfDivCount++;
+                    }
+                }
+                for(int i = 0; i < secondHalf.split("").length-1; i++)
+                {
+                    if(secondHalf.split("")[i].equals("/"))
+                    {
+                        secondHalfDiv = true;
+                        indexSecondHalfDivCount++;
+                    }
+                    if(secondHalf.split("")[i].equals("e") || secondHalf.split("")[i].equals("s"))
+                    {
+                        secondHalfExpresh = true;
+                    }
+                }
+                
+                boolean tripped = false;
+                if(secondHalfDiv == true && secondHalf.split("").length == 4 &&secondHalf.split("")[0].equals(Integer.toString((int)place)))
+                {
+                    tripped = true;
+                    dist = secondHalf.substring(1,secondHalf.split("").length);
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                }
+                
+                if(secondHalfDiv == true && secondHalf.split("").length == 3)
+                {
+                    if(firstHalf.split("").length == 2)
+                    {
+                        tripped = true;
+                        dist = "" + firstHalf.split("")[firstHalf.split("").length-1] + " " + secondHalf.substring(0,secondHalf.split("").length);
+                        //System.out.println("Position: " + (int)place + "   by a distance of: "+ dist + "  Distance behind first: " + totalDistBehind);
+                    }else{
+                        if(firstHalf.split("").length == 3)
+                        {
+                            tripped = true;
+                            dist = "" + firstHalf.substring(1,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
+                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                    }
+                }
+                
+                if(secondHalfDiv == false && secondHalf.split("").length == 3)
+                {
+                    tripped = true;  dist = "" + secondHalf.substring(1,secondHalf.split("").length);
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                }
+                
+                //Whole Number furlong distances
+                if(secondHalfDiv == false && secondHalf.split("").length == 2)
+                {
+                    tripped = true;  dist = "" + secondHalf.substring(1,secondHalf.split("").length);
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                }
+                
+                //Last Place Horeseys (1-9)
+                if(secondHalfDiv == false && secondHalf.split("").length == 1)
+                {
+                    tripped = true;
+                    dist = "0";
+                    //System.out.println(secondHalf);
+                    //System.out.println("Position (Last Horse): " + (int)place + "  Distance behind first: " + totalDistBehind);
+                }
+                
+                //Handles Expressions (Nose, Neck and Head)
+                if(secondHalfExpresh == true)
+                {
+                    tripped = true;
+                    dist = secondHalf.substring(1,secondHalf.split("").length);
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                }
+                
+                //Greater than 10 Horses Racing
+                if((int)place >= 10)
+                {
+                    //System.out.println("hereer");
+                    if(tripped == false)
+                    {
+                        if(secondHalfDiv == false && secondHalf.split("").length == 4 && secondHalf.substring(0,2).equals(Integer.toString((int)place)))
+                        {
+                            tripped = true;
+                            dist = "" + secondHalf.substring(2,secondHalf.split("").length);
+                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                        
+                        if(secondHalfDiv == true && secondHalf.split("").length == 3)
+                        {
+                            tripped = true;
+                            dist = "" + firstHalf.substring(2,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
+                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                        
+                        if(secondHalfDiv == true && secondHalf.split("").length == 2)
+                        {
+                            tripped = true;
+                            dist = "" + firstHalf.substring(2,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
+                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                        
+                        if(secondHalfDiv == true && secondHalf.split("").length == 5 && secondHalf.substring(0,2).equals(Integer.toString((int)place)))
+                        {
+                            tripped = true;
+                            dist = secondHalf.substring(2,secondHalf.split("").length);
+                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                        
+                        //Here
+                        if(secondHalfExpresh == true)
+                        {
+                            tripped = true;
+                            dist = secondHalf.substring(1,secondHalf.split("").length);
+                            System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                        }
+                        
+                        if(tripped != true)
+                        {
+                            System.out.println("ISSUES");
+                            System.out.println(firstHalf + "  " + secondHalf);
+                        }
+                    }
+                }
+                
+                //Ties
+                if(secondHalfDiv == true && secondHalf.split("").length == 4 &&secondHalf.split("")[0].equals(Integer.toString((int)place-1)))
+                {
+                    tripped = true;
+                    dist = secondHalf.substring(1,secondHalf.split("").length);
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
+                }
+                if(!tripped)
+                {
+                    System.out.println("Date: " + date + "  RaceNum: " + raceNum);
+                    System.out.println("EVALUATE: " + dater);
+                }
+            }else{
+                //System.out.println("Horse did not finish race");
+                dist = Integer.toString(didNotFinishPenalty);
+                totalDistBehind = totalDistBehind + didNotFinishPenalty;
+            }
+        }
+        //Split up points of call for finish
+        double translatedDistance = 0.0;
+        String[] pieces = dist.split("");
+        boolean hasFraction = false;    boolean hasExpresh = false;
+        for(int i = 0; i < pieces.length-1; i++)
+        {
+            if(pieces[i].equals("/"))
+            { 
+               hasFraction = true;
+            }
+            if(pieces[i].equals("s") || pieces[i].equals("e"))
+            { 
+               hasExpresh = true;
+            }
+        }
+        
+        //double offset = finalTimeTrackRecordDiff*offsetWeight;
+        //double horseSpeedRating = 100.0 - offset - (totalDistBehindWeight*totalDistBehind);
+        //System.out.println("Speed rating for horse: " + horseSpeedRating + "   TimeDiffer: " + finalTimeTrackRecordDiff);
+        //BigDecimal bd = new BigDecimal(horseSpeedRating).setScale(2, RoundingMode.HALF_UP);
+        // horseSpeedRating = bd.doubleValue();
+        
+        
+        double fractional = 0.0;
+        boolean hasCalc = false;
+        if(hasFraction == false && hasExpresh == false)
+        {
+            hasCalc = true;
+            translatedDistance = translatedDistance + Double.valueOf(dist);
+        }else{
+            if(hasFraction == true && hasExpresh == false)
+            {
+                int numOfPieces = dist.split(" ").length;
+
+                if(numOfPieces == 1)
+                {
+                    hasCalc = true;
+                    double numerator = (double)Double.valueOf(dist.split(" ")[0].split("/")[0]);
+                    double denominator = (double)Double.valueOf(dist.split(" ")[0].split("/")[1]);
+                    fractional = numerator/denominator;
+                    translatedDistance = translatedDistance + fractional;
+                }else{
+                    if(numOfPieces == 2)
+                    {
+                        hasCalc = true;
+                        String[] compleFrac = dist.split(" ");
+                        translatedDistance = translatedDistance + (double)Double.valueOf(compleFrac[0]);
+                        double numerator = (double)Double.valueOf(compleFrac[1].split("/")[0]);
+                        double denominator = (double)Double.valueOf(compleFrac[1].split("/")[1]);
+                        fractional = numerator/denominator;
+                        translatedDistance = translatedDistance + fractional;
+                    }
+                }
+            }
+            if(hasExpresh == true)
+            {
+                if(dist.equals("Nose"))
+                {
+                    hasCalc = true;
+                    translatedDistance = translatedDistance + 0.05;
+                }
+                if(dist.equals("Head"))
+                {
+                    hasCalc = true;
+                    translatedDistance = translatedDistance + 0.2;
+                }
+                if(dist.equals("Neck"))
+                {
+                    hasCalc = true;
+                    translatedDistance = translatedDistance + 0.3;
+                }
+            }
+        }
+        if(!hasCalc)
+        {
+            boolean redo = false;
+            String[] dExpresh = dist.split("");
+            if(dExpresh[0].equals("0") || dExpresh[0].equals("1") || dExpresh[0].equals("2") 
+            || dExpresh[0].equals("3") || dExpresh[0].equals("4") && (dExpresh[1].equals("N") || dExpresh[1].equals("H")))
+            {
+                String editedDist = dist.substring(1, dist.split("").length);
+                //System.out.println("NEWDIST:" + editedDist);
+                //System.out.println("Date: " + date + "   RaceNum: " + raceNum);
+                if(editedDist.equals("Nose"))
+                {
+                    redo = true;
+                    translatedDistance = translatedDistance + 0.05;
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
+                }
+                if(editedDist.equals("Head") && redo == false)
+                {
+                    redo = true;
+                    translatedDistance = translatedDistance + 0.2;
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
+                }
+                if(editedDist.equals("Neck") && redo == false)
+                {
+                    redo = true;
+                    translatedDistance = translatedDistance + 0.3;
+                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
+                }
+                //System.out.println("-------------------------------------------------------------------");
+            }
+            if(redo == false)
+            {
+                System.out.println("Sommen not calculater");
+                System.out.println("Date: " + date + "   RaceNum: " + raceNum);
+                System.out.println("Dist: " + dist + "   Place: " + (int)place);
+                System.out.println("-------------------------------------------------------------------");
+            }
+        }
+        
+        totalDistBehind = totalDistBehind + translatedDistance;
+        
+        //System.out.println("-------------------------------------------------------------------");
+        return 0;
     }
     
     public String final_time(String[] lines)
