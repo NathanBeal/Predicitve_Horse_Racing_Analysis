@@ -1,4 +1,4 @@
-import java.util.*;
+ import java.util.*;
 import java.io.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -49,9 +49,12 @@ public class DATA_ORGANIZATION
         init_dictionary();
         
         //Surface
+        //File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/AQU 2015-2016-EDITED.pdf");
         //File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/AQU 2017-2020-EDITED.pdf");
+        
         //Laptop
-        File myFile = new File("C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        //File myFile = new File("C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
         
         String text;
         String[] pages;
@@ -85,6 +88,7 @@ public class DATA_ORGANIZATION
         String currentRace;
         int min = 0;
         int lim = numPages+1;
+        String last_date = "";
         for (int i = 1; i < lim; i++)
         {
             //Temp ArrayList to collect Values of each race/page
@@ -99,7 +103,11 @@ public class DATA_ORGANIZATION
             {
                 //Date
                 date = retrieveDate(lines);
-                sb.append("DATE:" + date + ","); sb.append('\n'); 
+                if(!last_date.equals(date))
+                {
+                    sb.append("DATE:" + date + ","); sb.append('\n'); 
+                    last_date = date;
+                }
                 
                 //Race Track Data
                 sb.append("Race Num:" + raceNumber(lines) + ",");
@@ -115,7 +123,7 @@ public class DATA_ORGANIZATION
                 ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
                 for (int j = 0; j < racerData.size(); j++)
                 {
-                    System.out.println(racerData.get(j));
+                    //System.out.println(racerData.get(j));//MAIN DATA
                     DATA.add(racerData.get(j));
                 }
                 
@@ -202,6 +210,7 @@ public class DATA_ORGANIZATION
         String[] weight_arr = new String[2];
         String[] polePos_ME = new String[2];
         String finish = "";
+        int horse_num = 1;
         for(int i = lIndex; i < uIndex+1; i++)
         {
             ArrayList<String> indivHorse = new ArrayList<String>();
@@ -210,7 +219,7 @@ public class DATA_ORGANIZATION
             horseAndJockey  = horseAndJockey(dataLinePieces); //Slapped on ')' index, easier for pole pos and M/E
             weight_arr      = weight(dataLinePieces); 
             polePos_ME      = polePos_ME(dataLinePieces, weight_arr[1]); 
-            finish          = finish(dataLinePieces);
+            //finish          = finish(lines[lIndex-1], dataLinePieces, horse_num+"", horseAndJockey[0]);
             odds_fav_com    = odds_fav_com(dataLinePieces);
 
             String last_date_raced = "";
@@ -222,10 +231,11 @@ public class DATA_ORGANIZATION
             }
             indivHorse.add(last_date_raced); indivHorse.add(pastPerf_pgm[0]); indivHorse.add(pastPerf_pgm[1]);
             indivHorse.add(pastPerf_pgm[2]); indivHorse.add(pastPerf_pgm[3]); indivHorse.add(horseAndJockey[0]); indivHorse.add(horseAndJockey[1]);
-            indivHorse.add(weight_arr[0]); indivHorse.add(polePos_ME[1]); indivHorse.add(polePos_ME[0]); indivHorse.add("FINISH"); 
+            indivHorse.add(weight_arr[0]); indivHorse.add(polePos_ME[1]); indivHorse.add(polePos_ME[0]); indivHorse.add("FIN"); //indivHorse.add(finish); indivHorse.add(finish);
             indivHorse.add(odds_fav_com[0]); indivHorse.add(odds_fav_com[1]); indivHorse.add(odds_fav_com[2]);
             
             horses.add(indivHorse);
+            horse_num++;
         }
         
         return horses;
@@ -378,6 +388,7 @@ public class DATA_ORGANIZATION
         int index = -1;
         
         // M/E
+        int pole_pos_index = 0;
         for(int i = me_index; i <me_index+4; i++)
         {
             String[] comps = dataPieces[i].split("");
@@ -385,35 +396,55 @@ public class DATA_ORGANIZATION
             //
             if(asciiVal >= 65 && asciiVal <= 90 || asciiVal >= 97 && asciiVal <= 122)
             {
+                pole_pos_index = i;
                 me += dataPieces[i];
             }
+            
+            if(asciiVal == 45) pole_pos_index = i;
         }
         if(me.equals("")) me = "N/A";
         
-        
-        for(int i = me_index; i <me_index+4; i++)
+        int pp_index = 0;
+        pole_pos_index:
+        for(int i = 0; i < dataPieces.length; i++)
         {
-            String[] comps = dataPieces[i].split("");
-            
-            if(dataPieces[i].equals("b") || dataPieces[i].equals("f") || dataPieces[i].equals("h") ||
-            dataPieces[i].equals("bf") || dataPieces[i].equals("L") || dataPieces[i].equals("-")
-            || dataPieces[i].equals("bh") || dataPieces[i].equals("g") || dataPieces[i].equals("a")
-            || dataPieces[i].equals("v") || dataPieces[i].equals("fv") || dataPieces[i].equals("ab")
-            )
+            String[] tempVal = ((dataPieces[i]).split(""));
+            if((tempVal[tempVal.length-1]).equals(")"))
             {
-                //System.out.println("FLAG");
-                index = i;
+                pp_index = i+1;
+                break pole_pos_index;
             }
         }
         
-        String sPolePos = dataPieces[index+1];
-        //System.out.println(sPolePos);
-        if(Integer.parseInt(sPolePos) > 15)
+        for(int i = pp_index; i < pp_index+7; i++)
         {
-            return new String[] {showError("ERROR: polePosition() - POLEPOS differs from variables " + sPolePos), "ERR"};
-        }else{
-            return new String[] {sPolePos, me};
+            int asciiVal = dataPieces[i].split("")[0].charAt(0);
+            if(dataPieces[i].split("").length == 1 && (asciiVal >= 48 && asciiVal <= 57))
+            {
+                //System.out.println("pole pos: " + dataPieces[i] + " ");
+                return new String[] {dataPieces[i], me};
+            }else{
+                if(dataPieces[i].split("").length == 2)
+                {
+                    int asciiVal1 = dataPieces[i].split("")[0].charAt(0);
+                    int asciiVal2 = dataPieces[i].split("")[1].charAt(0);
+                    if(asciiVal1 >= 48 && asciiVal1 <= 57 && asciiVal2 >= 48 && asciiVal2 <= 57)
+                    {
+                        //System.out.println("pole pos: " + dataPieces[i] + " ");
+                        return new String[] {dataPieces[i], me};
+                    }
+                }
+            }
         }
+        
+        System.out.println("ERROR: Pole Pos");
+        for(int i = pp_index; i < pp_index+6; i++)
+        {
+            System.out.print(dataPieces[i] + " " );
+        }
+        System.out.println("");
+
+        return new String[] {"ERR", "ERR"};
     }
     
     public String[] horseAndJockey(String[] dataPieces)
@@ -524,7 +555,33 @@ public class DATA_ORGANIZATION
             return new String[] {"FR", "FR", "FR", arr[1]};
         }else{
             String[] w = arr[1].split("");
-            return new String[] {arr[1].substring(0,1), arr[1].substring(1,w.length-1), arr[1].substring(w.length-1, w.length), arr[2]};
+            String past_race ="";
+            String past_track ="";
+            String past_pos ="";
+            boolean letters = false;
+            for(int i = 0; i < w.length; i++)
+            {
+                int asciiVal = w[i].charAt(0);
+                if(!letters)//Isolates track number
+                {
+                    if(asciiVal >= 48 && asciiVal <= 57)
+                    {
+                        past_race+=w[i];
+                    }else{
+                        past_track += w[i];
+                        letters = true;
+                    }
+                }else{
+                    if(asciiVal >= 48 && asciiVal <= 57)//numbers after letters have been found (past_Pos)
+                    {
+                        past_pos+=w[i];
+                    }else{
+                        if(asciiVal >= 65 && asciiVal <= 90 || asciiVal >= 97 && asciiVal <= 122) past_track += w[i];
+                    }
+                }
+            }
+            //System.out.println(past_race + " " + past_track + " " + past_pos);
+            return new String[] {past_race, past_track, past_pos, arr[2]};
         }
     }
     
@@ -583,9 +640,26 @@ public class DATA_ORGANIZATION
         
         //System.out.println(lines[index]);
         track_record_pieces = lines[index].split("Record");
-        track_record_pieces = track_record_pieces[1].split("-");
-        track_record_pieces = track_record_pieces[1].split(" ");
-        track_record = track_record_pieces[1];
+        String[] allChars = track_record_pieces[1].split("");
+        
+        boolean found_per = false;
+        for(int i = 0; i < allChars.length; i++)
+        {
+            if(allChars[i].equals(".")) found_per = true;
+        }
+        //TRACK RECORD
+        if(found_per)
+        {
+            track_record_pieces = track_record_pieces[1].split("-");
+            track_record_pieces = track_record_pieces[1].split(" ");
+            track_record = track_record_pieces[1];
+        }else{//Too long string, track record booted to next line (AQU 11/14/20 Race 3)
+            System.out.println(lines[index+1]);
+            track_record_pieces = lines[index+1].split("- ");
+            track_record_pieces = track_record_pieces[1].split("");
+            track_record = track_record_pieces[1];
+            System.out.println("date: " + date + "  TR:" + track_record);
+        }
         
         //System.out.println("TR:" + track_record);
         
@@ -613,8 +687,17 @@ public class DATA_ORGANIZATION
         if(distance.equals("Six And One Half Furlongs")) return new String[] {"1430", track_record};
         if(distance.equals("Seven Furlongs")) return new String[] {"1540", track_record};
         if(distance.equals("One Mile")) return new String[] {"1760", track_record};
-        
-        return new String[] {showError("ERROR: Non registered distance of: '" + distance +"'"), "ERR"};
+        if(distance.equals("One Mile And Seventy Yards")) return new String[] {"1830", track_record};
+        if(distance.equals("One And One Sixteenth Miles")) return new String[] {"1870", track_record};
+        if(distance.equals("One And One Eighth Miles")) return new String[] {"1980", track_record};
+        if(distance.equals("One And Three Sixteenth Miles")) return new String[] {"2090", track_record};
+        if(distance.equals("One And One Fourth Miles")) return new String[] {"2200", track_record};
+        if(distance.equals("One And Three Eighth Miles")) return new String[] {"2420", track_record};
+        if(distance.equals("One And Five Sixteenth Miles")) return new String[] {"2310", track_record};
+        if(distance.equals("One And One Half Miles")) return new String[] {"2640", track_record};
+
+        System.out.println("ERROR: Non registered distance of: '" + distance +"'");
+        return new String[] {"ERR", "ERR"};
     }
     
     public String raceNumber(String[] lines)
@@ -695,337 +778,204 @@ public class DATA_ORGANIZATION
         }
     }
     
-    public String finish(String[] data_pieces)
+    public String finish(String var_line, String[] data_pieces, String horse_num, String horse_name)
     {
-        int index = -1;
-        String isFavorited = "N";
-        for(int i = 2; i < data_pieces.length; i++)
+        //System.out.println(var_line);
+        var_line = var_line.split("PP ")[1];
+        var_line = var_line.split(" Odds")[0];
+        int num_of_pieces = var_line.split(" ").length;
+        //System.out.println(num_of_pieces);
+        //System.out.println(var_line);
+        
+        int start_index = 0, finish_index = 0;
+        
+        start_index:
+        for(int i = 0; i < data_pieces.length; i++)
         {
-            String[] tempVal = ((data_pieces[i]).split(""));
-            for(int j = 0; j < tempVal.length-1; j++)
+            String[] chars = ((data_pieces[i]).split(""));
+            for(int j = 0; j < chars.length; j++)
             {
-                if( (tempVal[j]).equals(".") )
+                if((chars[j]).equals(")") )
                 {
-                    index = i-2;
+                    start_index = i+2;
                 }
             }
         }
         
-        //ALL WORKD IS HERE
-        for(int i = index; i < index+2; i++)
+        finish_index:
+        for(int i = start_index; i < data_pieces.length; i++)
+        {
+            String[] chars = ((data_pieces[i]).split(""));
+            for(int j = 0; j < chars.length; j++)
+            {
+                if((chars[j]).equals(".") )
+                {
+                    finish_index = i;
+                    break finish_index;
+                }
+            }
+        }
+        
+        //Isolating Measurments from Pole Pos and M/E
+        ArrayList<String> pieces = new ArrayList<String>();
+        boolean is_data = false;
+        boolean start_data = false;
+        final_start_index:
+        for(int i = start_index; i < finish_index; i++)
+        {
+            int asciiVal = data_pieces[i].charAt(0);
+            
+            if(asciiVal >= 48 && asciiVal <= 57)
+            {
+                start_index = i + 1;
+                break final_start_index;
+            }
+        }
+        
+        for(int i = start_index; i < finish_index; i++)
+        {
+            if(i >= finish_index-2)
+            {
+                pieces.add(data_pieces[i]);
+                //System.out.print(data_pieces[i] + ",");
+            }
+        }
+        
+        for(int i = 0; i < pieces.size(); i++)
+        {
+            //System.out.print(pieces.get(i) + ",");
+            if(i == pieces.size()-1 && pieces.get(i).equals("---")) return "DNF";
+            
+            if(i == pieces.size()-1 && pieces.get(i).split("").length == 1)
+            {
+                return pieces.get(i);
+            }else{//Anyone other than the last horse to finish
+                //Anyone other than the last horse to finish
+                if(i == pieces.size()-1)
+                {
+                    String[] last_word = pieces.get(i).split("");
+                    boolean has_slash = false;
+                    for(int j = 0; j < last_word.length; j++)
+                    { 
+                        if(last_word[j].equals("/")) has_slash = true;
+                    }
+                    
+                    if(has_slash)//in last piece of info
+                    {
+                        //System.out.println("Slash:" + pieces.get(i-1) + " " + pieces.get(i));
+                        
+                        //EX: 6th Place, 15/03/2020: 63,1/2 -> 6^(3+1/2)
+                        if(pieces.get(i).split("").length == 3 && pieces.get(i-1).split("").length == 2 && pieces.get(i-1).split("")[0].equals(horse_num))
+                        {
+                            return (pieces.get(i-1).split("")[0] + "_" + pieces.get(i-1).split("")[1] + "+" + pieces.get(i));
+                        }
+                        
+                        //EX 4th place, 15/03/2020: 41/2,41/2, -> 4^(1/2)
+                        if(pieces.get(i).split("").length == 4 && pieces.get(i).substring(0,1).equals(horse_num))
+                        {
+                            return (pieces.get(i).substring(0,1) + "_" + pieces.get(i).substring(1,pieces.get(i).split("").length));
+                        }
+                        
+                        //EX 10th place, 15/03/2020: 101/2, -> 4^(1/2)
+                        if(pieces.get(i).split("").length == 5 && pieces.get(i).substring(0,2).equals(horse_num))
+                        {
+                            return (pieces.get(i).substring(0,2) + "_" + pieces.get(i).substring(2,pieces.get(i).split("").length));
+                        }
+                        
+                        //EX: 5th place, 515,1/2,
+                        if(pieces.get(i-1).substring(0,1).equals(horse_num))
+                        {
+                            return (pieces.get(i-1).substring(0,1) + "_" + pieces.get(i-1).substring(1,pieces.get(i).split("").length) + "+" +  pieces.get(i));
+                        }
+                        
+                        //EX: 11th place, 1015,1/2
+                        if(pieces.get(i-1).substring(0,2).equals(horse_num))
+                        {
+                            return (pieces.get(i-1).substring(0,2) + "_" + pieces.get(i-1).substring(2,pieces.get(i).split("").length) + "+" +  pieces.get(i));
+                        }
+                        
+                        //MUST GO LAST, TIE (ERR: Will Did It, 3, 31/12/2016 -> 21,1/2,)
+                        int h_num_tie = Integer.valueOf(horse_num)-1;
+                        int DATA = Integer.valueOf(pieces.get(i-1).split("")[0]);
+                        if(pieces.get(i).split("").length == 3 && pieces.get(i-1).split("").length == 2 && h_num_tie==DATA)//
+                        {
+                            //System.out.println("TIE: " + date + " - " +horse_num +" - "+ horse_name + "-" + pieces.get(i));
+                            return (pieces.get(i-1).split("")[0] + "_" + pieces.get(i-1).split("")[1] + "+" + pieces.get(i));
+                        }
+                        
+                        //EX.Sir Ballantine, 5, 02/12/2016,41/2,
+                        DATA = Integer.valueOf(pieces.get(i).substring(0,1));
+                        if(pieces.get(i).split("").length == 4 && h_num_tie==DATA)//
+                        {
+                            //System.out.println("TIE: " + date + " - " +horse_num +" - "+ horse_name + "-" + pieces.get(i));
+                            return (pieces.get(i).substring(0,1) + "_" + pieces.get(i).substring(1,pieces.get(i).split("").length));
+                        }
+                        
+                        //EX.ERR: Oathkeeper, 11, 09/11/2016: 101/2,
+                        if(pieces.get(i).split("").length > 4)
+                        {
+                            //System.out.println(pieces.get(i));
+                            DATA = Integer.valueOf(pieces.get(i).substring(0,2));
+                            if(pieces.get(i).split("").length == 5 && h_num_tie==DATA)//
+                            {
+                                //System.out.println("TIE: " + date + " - " +horse_num +" - "+ horse_name + "-" + pieces.get(i));
+                                return (pieces.get(i).substring(0,2) + "_" + pieces.get(i).substring(2,pieces.get(i).split("").length));
+                            }
+                        }
+                        
+                    }else{
+                        //System.out.println("No Slash:" + pieces.get(i));
+                        
+                        //EX: 3rd place, 15/03/2020: 3Nose
+                        if(pieces.get(i).substring(0,1).equals(horse_num))
+                        {
+                            return (pieces.get(i).substring(0,1) + "_" + pieces.get(i).substring(1,pieces.get(i).split("").length));
+                        }
+                        
+                        //EX: 11th place, 15/03/2020: 11Head
+                        if(pieces.get(i).substring(0,2).equals(horse_num))
+                        {
+                            return (pieces.get(i).substring(0,2) + "_" + pieces.get(i).substring(2,pieces.get(i).split("").length));
+                        }
+                        
+                        //MUST GO LAST, TIE (ERR: Will Did It, 3, 31/12/2016 -> 21,1/2,)
+                        int h_num_tie = Integer.valueOf(horse_num)-1;
+                        int DATA = Integer.valueOf(pieces.get(i).substring(0,1));
+                        //EX: ERR: Whitegate, 6, 01/12/2016 -> 51,52,
+                        if(pieces.get(i).split("").length == 2 && h_num_tie==DATA)//
+                        {
+                            //System.out.println("TIE: " + date + " - " +horse_num +" - "+ horse_name + "-" + pieces.get(i));
+                            return (pieces.get(i).substring(0,1) + "_" + pieces.get(i).substring(1,2));
+                        }
+                        
+                        //EX: 3rd place, 15/03/2020: 2Nose ->ERR: Glacken Too, 3, 26/03/2015 - 31/2,2Neck,
+                        if(DATA==h_num_tie)
+                        {
+                            return (pieces.get(i).substring(0,1) + "_" + pieces.get(i).substring(1,pieces.get(i).split("").length));
+                        }
+                    }
+                }
+                
+                
+                
+            }
+
+        }
+        
+        System.out.println("ERR: "+ horse_name + ", " + horse_num + ", " + date);
+        for(int i = 0; i < pieces.size(); i++)
+        {
+            //System.out.print(pieces.get(i) + ",");
+        }
+        
+        for(int i = 0; i < finish_index; i++)
         {
             System.out.println(data_pieces[i]);
         }
         
-        return "";
-    }
-    
-    public double calculateSPRAT(String[] lines, double place, int lBound, int hBound)
-    {
-        //System.out.println("Time Differ: " + finalTimeTrackRecordDiff);
-        String[] numOfItems = (lines[lBound-1]).split(" PP ");
-        numOfItems = numOfItems[1].split(" Odds");
-        numOfItems = numOfItems[0].split(" ");
+        System.out.println("");
         
-        String dist = "";
-        
-        if(numOfItems.length == 4 ||  numOfItems.length == 5 || numOfItems.length == 6)//&& numOfItems[3].equals("Str"))
-        {
-            //System.out.print(lines[lBound+(int)place-1]);
-            String[] finishCall = lines[lBound+(int)place-1].split("");
-            int indexBracket = -1;
-            int indexPeriod = -1;
-            for(int i = 0; i < finishCall.length-1; i++)
-            {
-                if(finishCall[i].equals("."))
-                {
-                    indexPeriod= i+3;
-                }
-            }
-            
-            for(int i = 0; i < finishCall.length-1; i++)
-            {
-                if(finishCall[i].equals(")"))
-                {
-                    indexBracket = i+2;
-                    break;
-                }
-            }
-            String substr = lines[lBound+(int)place-1].substring(indexBracket,indexPeriod);
-            finishCall = substr.split(" ");
-            
-            int indexSecondSpace = -1; int countSecondSpace = 0;
-            String dater = "" + finishCall[finishCall.length-3] + " " 
-            + finishCall[finishCall.length-2];
-            //System.out.println("THIS: " + dater);
-            if(!finishCall[finishCall.length-2].equals("---"))
-            {
-                String firstHalf = "" + finishCall[finishCall.length-3];
-                String secondHalf = "" + finishCall[finishCall.length-2];
-                boolean firstHalfDiv = false; 
-                int indexFirstHalfDivCount = 0; int indexFirstHalfExpreshCount = 0;
-                boolean secondHalfDiv = false; boolean secondHalfExpresh = false;
-                int indexSecondHalfDivCount = 0;  int indexSecondHalfExpreshCount = 0;
-                for(int i = 0; i < firstHalf.split("").length-1; i++)
-                {
-                    if(firstHalf.split("")[i].equals("/"))
-                    {
-                        firstHalfDiv = true;
-                        indexFirstHalfDivCount++;
-                    }
-                }
-                for(int i = 0; i < secondHalf.split("").length-1; i++)
-                {
-                    if(secondHalf.split("")[i].equals("/"))
-                    {
-                        secondHalfDiv = true;
-                        indexSecondHalfDivCount++;
-                    }
-                    if(secondHalf.split("")[i].equals("e") || secondHalf.split("")[i].equals("s"))
-                    {
-                        secondHalfExpresh = true;
-                    }
-                }
-                
-                boolean tripped = false;
-                if(secondHalfDiv == true && secondHalf.split("").length == 4 &&secondHalf.split("")[0].equals(Integer.toString((int)place)))
-                {
-                    tripped = true;
-                    dist = secondHalf.substring(1,secondHalf.split("").length);
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                }
-                
-                if(secondHalfDiv == true && secondHalf.split("").length == 3)
-                {
-                    if(firstHalf.split("").length == 2)
-                    {
-                        tripped = true;
-                        dist = "" + firstHalf.split("")[firstHalf.split("").length-1] + " " + secondHalf.substring(0,secondHalf.split("").length);
-                        //System.out.println("Position: " + (int)place + "   by a distance of: "+ dist + "  Distance behind first: " + totalDistBehind);
-                    }else{
-                        if(firstHalf.split("").length == 3)
-                        {
-                            tripped = true;
-                            dist = "" + firstHalf.substring(1,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
-                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                    }
-                }
-                
-                if(secondHalfDiv == false && secondHalf.split("").length == 3)
-                {
-                    tripped = true;  dist = "" + secondHalf.substring(1,secondHalf.split("").length);
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                }
-                
-                //Whole Number furlong distances
-                if(secondHalfDiv == false && secondHalf.split("").length == 2)
-                {
-                    tripped = true;  dist = "" + secondHalf.substring(1,secondHalf.split("").length);
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                }
-                
-                //Last Place Horeseys (1-9)
-                if(secondHalfDiv == false && secondHalf.split("").length == 1)
-                {
-                    tripped = true;
-                    dist = "0";
-                    //System.out.println(secondHalf);
-                    //System.out.println("Position (Last Horse): " + (int)place + "  Distance behind first: " + totalDistBehind);
-                }
-                
-                //Handles Expressions (Nose, Neck and Head)
-                if(secondHalfExpresh == true)
-                {
-                    tripped = true;
-                    dist = secondHalf.substring(1,secondHalf.split("").length);
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                }
-                
-                //Greater than 10 Horses Racing
-                if((int)place >= 10)
-                {
-                    //System.out.println("hereer");
-                    if(tripped == false)
-                    {
-                        if(secondHalfDiv == false && secondHalf.split("").length == 4 && secondHalf.substring(0,2).equals(Integer.toString((int)place)))
-                        {
-                            tripped = true;
-                            dist = "" + secondHalf.substring(2,secondHalf.split("").length);
-                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                        
-                        if(secondHalfDiv == true && secondHalf.split("").length == 3)
-                        {
-                            tripped = true;
-                            dist = "" + firstHalf.substring(2,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
-                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                        
-                        if(secondHalfDiv == true && secondHalf.split("").length == 2)
-                        {
-                            tripped = true;
-                            dist = "" + firstHalf.substring(2,firstHalf.split("").length) + " " + secondHalf.substring(0,secondHalf.split("").length);
-                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                        
-                        if(secondHalfDiv == true && secondHalf.split("").length == 5 && secondHalf.substring(0,2).equals(Integer.toString((int)place)))
-                        {
-                            tripped = true;
-                            dist = secondHalf.substring(2,secondHalf.split("").length);
-                            //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                        
-                        //Here
-                        if(secondHalfExpresh == true)
-                        {
-                            tripped = true;
-                            dist = secondHalf.substring(1,secondHalf.split("").length);
-                            System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                        }
-                        
-                        if(tripped != true)
-                        {
-                            System.out.println("ISSUES");
-                            System.out.println(firstHalf + "  " + secondHalf);
-                        }
-                    }
-                }
-                
-                //Ties
-                if(secondHalfDiv == true && secondHalf.split("").length == 4 &&secondHalf.split("")[0].equals(Integer.toString((int)place-1)))
-                {
-                    tripped = true;
-                    dist = secondHalf.substring(1,secondHalf.split("").length);
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + dist + "  Distance behind first: " + totalDistBehind);
-                }
-                if(!tripped)
-                {
-                    System.out.println("Date: " + date + "  RaceNum: " + raceNum);
-                    System.out.println("EVALUATE: " + dater);
-                }
-            }else{
-                //System.out.println("Horse did not finish race");
-                dist = Integer.toString(didNotFinishPenalty);
-                totalDistBehind = totalDistBehind + didNotFinishPenalty;
-            }
-        }
-        //Split up points of call for finish
-        double translatedDistance = 0.0;
-        String[] pieces = dist.split("");
-        boolean hasFraction = false;    boolean hasExpresh = false;
-        for(int i = 0; i < pieces.length-1; i++)
-        {
-            if(pieces[i].equals("/"))
-            { 
-               hasFraction = true;
-            }
-            if(pieces[i].equals("s") || pieces[i].equals("e"))
-            { 
-               hasExpresh = true;
-            }
-        }
-        
-        //double offset = finalTimeTrackRecordDiff*offsetWeight;
-        //double horseSpeedRating = 100.0 - offset - (totalDistBehindWeight*totalDistBehind);
-        //System.out.println("Speed rating for horse: " + horseSpeedRating + "   TimeDiffer: " + finalTimeTrackRecordDiff);
-        //BigDecimal bd = new BigDecimal(horseSpeedRating).setScale(2, RoundingMode.HALF_UP);
-        // horseSpeedRating = bd.doubleValue();
-        
-        
-        double fractional = 0.0;
-        boolean hasCalc = false;
-        if(hasFraction == false && hasExpresh == false)
-        {
-            hasCalc = true;
-            translatedDistance = translatedDistance + Double.valueOf(dist);
-        }else{
-            if(hasFraction == true && hasExpresh == false)
-            {
-                int numOfPieces = dist.split(" ").length;
-
-                if(numOfPieces == 1)
-                {
-                    hasCalc = true;
-                    double numerator = (double)Double.valueOf(dist.split(" ")[0].split("/")[0]);
-                    double denominator = (double)Double.valueOf(dist.split(" ")[0].split("/")[1]);
-                    fractional = numerator/denominator;
-                    translatedDistance = translatedDistance + fractional;
-                }else{
-                    if(numOfPieces == 2)
-                    {
-                        hasCalc = true;
-                        String[] compleFrac = dist.split(" ");
-                        translatedDistance = translatedDistance + (double)Double.valueOf(compleFrac[0]);
-                        double numerator = (double)Double.valueOf(compleFrac[1].split("/")[0]);
-                        double denominator = (double)Double.valueOf(compleFrac[1].split("/")[1]);
-                        fractional = numerator/denominator;
-                        translatedDistance = translatedDistance + fractional;
-                    }
-                }
-            }
-            if(hasExpresh == true)
-            {
-                if(dist.equals("Nose"))
-                {
-                    hasCalc = true;
-                    translatedDistance = translatedDistance + 0.05;
-                }
-                if(dist.equals("Head"))
-                {
-                    hasCalc = true;
-                    translatedDistance = translatedDistance + 0.2;
-                }
-                if(dist.equals("Neck"))
-                {
-                    hasCalc = true;
-                    translatedDistance = translatedDistance + 0.3;
-                }
-            }
-        }
-        if(!hasCalc)
-        {
-            boolean redo = false;
-            String[] dExpresh = dist.split("");
-            if(dExpresh[0].equals("0") || dExpresh[0].equals("1") || dExpresh[0].equals("2") 
-            || dExpresh[0].equals("3") || dExpresh[0].equals("4") && (dExpresh[1].equals("N") || dExpresh[1].equals("H")))
-            {
-                String editedDist = dist.substring(1, dist.split("").length);
-                //System.out.println("NEWDIST:" + editedDist);
-                //System.out.println("Date: " + date + "   RaceNum: " + raceNum);
-                if(editedDist.equals("Nose"))
-                {
-                    redo = true;
-                    translatedDistance = translatedDistance + 0.05;
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
-                }
-                if(editedDist.equals("Head") && redo == false)
-                {
-                    redo = true;
-                    translatedDistance = translatedDistance + 0.2;
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
-                }
-                if(editedDist.equals("Neck") && redo == false)
-                {
-                    redo = true;
-                    translatedDistance = translatedDistance + 0.3;
-                    //System.out.println("Position: " + (int)place + "   by a distance of: " + editedDist + "  Distance behind first: " + totalDistBehind);
-                }
-                //System.out.println("-------------------------------------------------------------------");
-            }
-            if(redo == false)
-            {
-                System.out.println("Sommen not calculater");
-                System.out.println("Date: " + date + "   RaceNum: " + raceNum);
-                System.out.println("Dist: " + dist + "   Place: " + (int)place);
-                System.out.println("-------------------------------------------------------------------");
-            }
-        }
-        
-        totalDistBehind = totalDistBehind + translatedDistance;
-        
-        //System.out.println("-------------------------------------------------------------------");
-        return 0;
+        return "ERR"; //showError("ERROR: Did not find finish position");
     }
     
     public String final_time(String[] lines)
@@ -1083,6 +1033,6 @@ public class DATA_ORGANIZATION
     {
         System.out.println("Date: " + date + "      Race Number: " + raceNum);
         System.out.println(message);
-        return "ERR";
+        return "ERR!";
     }
 }
