@@ -79,9 +79,10 @@ with open("python_logo.png",'wb') as f:
     f.write(r.content)
     '''
 
-import requestsRun
+import requests
 urls = ['https://www.equibase.com/static/chart/pdf/SAR090121USA.pdf']
 output_dir = "C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis"
 
 req = requests.get(urls[0]);
 filename = req.url()
+print('hi')
