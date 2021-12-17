@@ -10,29 +10,13 @@ import org.apache.pdfbox.text.PDFTextStripper;
 public class DATA_ORGANIZATION
 {
     //Global Vars for Error Message
-    String date, raceNum;
-    String sNumOfHorses;
-    int page_number;
-    String last_distance;
+    String date, raceNum, last_distance, sNumOfHorses;
+    int page_number, pages_removed = 0;
     
     //Control Variables
     int START_PAGE = 1; //Actual Start is 1
     int END_PAGE = 3;
     boolean WRTITE_TO_CSV = true;
-    
-    //Performance Evaluators
-    int races_recorded,pages_removed = 0;
-    
-    //CONSTANTS*****
-    int numberOfDesiredRaces = 100;    
-    int didNotFinishPenalty = 5;
-    int firstRaceSpeedValue = 45;
-    double totalDistBehindWeight = 1.2;
-    double offsetWeight = 5;
-    int numberOfRacesToAverage = 4; //Number of races use in the rolling ave calculation for avespeed
-    int newDistRaceMinimum = 4;
-    int newDistMinimum = 3;
-    double totalDistBehind = 0.0;
     
     
     //Needed for output
@@ -58,7 +42,7 @@ public class DATA_ORGANIZATION
         data_dir = (data_dir.split("2. Java PDF-Data Conditioner")[0].replace("\\", "/") + "Racetrack Data/");
         data_dir += "AQU - Aqueduct Data/AQU 2017-2020-EDITED.pdf"; //Select which folder/data woulkd like to be used
         File myFile = new File(data_dir);
-        System.out.println(data_dir);
+        //System.out.println(data_dir);
         
         String text;
         String[] pages;
