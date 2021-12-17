@@ -54,14 +54,11 @@ public class DATA_ORGANIZATION
     public void run() throws IOException 
     {
         init_dictionary();
-        
-        //Surface
-        //File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/AQU 2015-2016-EDITED.pdf");
-        //File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
-        File myFile = new File("C:/Users/natha/OneDrive/Desktop/GitHub Repositories/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/AQU 2017-2020-EDITED.pdf");
-        
-        //Laptop
-        //File myFile = new File("C:/Users/natha/Desktop/GitHub Repositories/Active Repos/Predicitve_Horse_Racing_Analysis/Racetrack Data/AQU - Aqueduct Data/3-15-20 AQU.pdf");
+        String data_dir = System.getProperty("user.dir");
+        data_dir = (data_dir.split("2. Java PDF-Data Conditioner")[0].replace("\\", "/") + "Racetrack Data/");
+        data_dir += "AQU - Aqueduct Data/AQU 2017-2020-EDITED.pdf"; //Select which folder/data woulkd like to be used
+        File myFile = new File(data_dir);
+        System.out.println(data_dir);
         
         String text;
         String[] pages;
@@ -141,7 +138,6 @@ public class DATA_ORGANIZATION
         } 
         if(WRTITE_TO_CSV) System.out.println("Finished Writing to CSV");
         else System.out.println("You have opted not to write to CSV file");
-        //System.out.println("Number of Races Processed: " + totalRacesProcessed);
     }
     
     public void writeToCSV(ArrayList<ArrayList<String>> DATA)
