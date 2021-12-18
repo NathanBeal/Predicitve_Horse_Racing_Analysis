@@ -152,12 +152,12 @@ public class DATA_ORGANIZATION
     public void init_write_to_CSV()
     {
         //Race Constants
-        sb.append("Date,"); sb.append("Race Num,"); sb.append("Track Type,"); sb.append("Weather,"); sb.append("Dist,"); sb.append("Condition,"); 
-        sb.append("Track Record,"); sb.append("Final Time,");
+        sb.append("Date,"); sb.append("Race_Num,"); sb.append("Track_Type,"); sb.append("Weather,"); sb.append("Dist,"); sb.append("Condition,"); 
+        sb.append("Track_Record,"); sb.append("Final_Time,");
         
         sb.append("Last_Race,"); sb.append("Past_Race,"); sb.append("Past_Track,");  sb.append("Past_Pos,"); sb.append("Pgm,");
-        sb.append("Horse,"); sb.append("Jockey,");  sb.append("Weight,"); sb.append("M/E,"); sb.append("PP,"); sb.append("Finish (Place^Dist),");
-        sb.append("Odds,"); sb.append("Fav,"); sb.append("Comments,"); sb.append('\n');
+        sb.append("H_Name,"); sb.append("J_Name,");  sb.append("Wgt,"); sb.append("M/E,"); sb.append("PP,"); sb.append("Fin,"); 
+        sb.append("Dist_Ahead,"); sb.append("Odds,"); sb.append("Fav,"); sb.append("Comments,"); sb.append('\n');
     }
     
     public void writeToCSV(ArrayList<ArrayList<String>> DATA, ArrayList<String> CONSTANTS)
@@ -236,7 +236,7 @@ public class DATA_ORGANIZATION
         String[] odds_fav_com = new String[3];
         String[] weight_arr = new String[2];
         String[] polePos_ME = new String[2];
-        String finish = "";
+        String finish_distAhead = "";
         int horse_num = 1;
         for(int i = lIndex; i < uIndex+1; i++)
         {
@@ -246,7 +246,7 @@ public class DATA_ORGANIZATION
             horseAndJockey  = horseAndJockey(dataLinePieces); //Slapped on ')' index, easier for pole pos and M/E
             weight_arr      = weight(dataLinePieces); 
             polePos_ME      = polePos_ME(dataLinePieces, weight_arr[1]); 
-            finish          = finish(lines[lIndex-1], dataLinePieces, horse_num+"", horseAndJockey[0]); //System.out.println("Distance Ahead: " + finish);
+            finish_distAhead= finish(lines[lIndex-1], dataLinePieces, horse_num+"", horseAndJockey[0]); //System.out.println("Distance Ahead: " + finish);
             odds_fav_com    = odds_fav_com(dataLinePieces);
 
             String last_date_raced = "";
@@ -258,7 +258,8 @@ public class DATA_ORGANIZATION
             }
             indivHorse.add(last_date_raced); indivHorse.add(pastPerf_pgm[0]); indivHorse.add(pastPerf_pgm[1]);
             indivHorse.add(pastPerf_pgm[2]); indivHorse.add(pastPerf_pgm[3]); indivHorse.add(horseAndJockey[0]); indivHorse.add(horseAndJockey[1]);
-            indivHorse.add(weight_arr[0]); indivHorse.add(polePos_ME[1]); indivHorse.add(polePos_ME[0]); indivHorse.add(finish); //indivHorse.add("FIN"); 
+            indivHorse.add(weight_arr[0]); indivHorse.add(polePos_ME[1]); indivHorse.add(polePos_ME[0]); 
+            indivHorse.add(finish_distAhead.split(" & ")[0]); indivHorse.add(finish_distAhead.split(" & ")[1]);//indivHorse.add("FIN"); 
             indivHorse.add(odds_fav_com[0]); indivHorse.add(odds_fav_com[1]); indivHorse.add(odds_fav_com[2]);
             
             horses.add(indivHorse);
@@ -266,7 +267,7 @@ public class DATA_ORGANIZATION
             
             //System.out.println("PAGE NUM : " + page_number);
             //System.out.println(finish);
-            last_distance = finish.split(" & ")[1];
+            last_distance = finish_distAhead.split(" & ")[1];
         }
         
         return horses;
