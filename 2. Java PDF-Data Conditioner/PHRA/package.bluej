@@ -1,9 +1,9 @@
 #BlueJ package file
-editor.fx.0.height=927
-editor.fx.0.width=1383
-editor.fx.0.x=-154
-editor.fx.0.y=65
-objectbench.height=156
+editor.fx.0.height=877
+editor.fx.0.width=1381
+editor.fx.0.x=-6
+editor.fx.0.y=-6
+objectbench.height=172
 objectbench.width=696
 package.divider.horizontal=0.6
 package.divider.vertical=0.4608433734939759
@@ -29,5 +29,5 @@ target1.name=DATA_ORGANIZATION
 target1.showInterface=false
 target1.type=ClassTarget
 target1.width=170
-target1.x=70
-target1.y=10
+target1.x=80
+target1.y=20
