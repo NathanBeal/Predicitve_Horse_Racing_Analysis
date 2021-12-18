@@ -12,11 +12,13 @@ public class DATA_ORGANIZATION
     //Global Vars for Error Message
     String date, raceNum, last_distance, sNumOfHorses;
     int page_number, pages_removed = 0;
+    float exec_time, start_time, end_time = 0;
     
     //Control Variables
     int START_PAGE = 1; //Actual Start is 1
-    int END_PAGE = 3;
+    int END_PAGE = 2;
     boolean WRTITE_TO_CSV = true;
+    boolean REPORT_PROCESSING_STATS = true;
     
     
     //Needed for output
@@ -37,7 +39,9 @@ public class DATA_ORGANIZATION
     
     public void run() throws IOException 
     {
+        start_time = System.currentTimeMillis();
         init_dictionary();
+        init_write_to_CSV();
         String data_dir = System.getProperty("user.dir");
         data_dir = (data_dir.split("2. Java PDF-Data Conditioner")[0].replace("\\", "/") + "Racetrack Data/");
         data_dir += "AQU - Aqueduct Data/AQU 2017-2020-EDITED.pdf"; //Select which folder/data woulkd like to be used
@@ -77,12 +81,13 @@ public class DATA_ORGANIZATION
         int min = 0;
         int lim = num_pages+1;
         String last_date = "";
-        for (int i = START_PAGE; i < lim; i++)//END_PAGE; i++)
+        for (int i = START_PAGE; i < lim; i++)//i < lim; i++)//END_PAGE; i++)
         {
             //Temp ArrayList to collect Values of each race/page
             page_number = i;//Page numbber flag
             ArrayList<String> tempArr = new ArrayList<String>();
             ArrayList<ArrayList<String>> DATA = new ArrayList<ArrayList<String>>();
+            ArrayList<String> race_constants = new ArrayList<String>();
             String[] dist_tr = new String[2];
             
             currentRace = pages[i];
@@ -92,22 +97,33 @@ public class DATA_ORGANIZATION
             {
                 //Date
                 date = retrieveDate(lines);
+                /*
                 if(!last_date.equals(date))
                 {
                     sb.append("DATE:" + date + ","); sb.append('\n'); 
                     last_date = date;
                 }
+                */
+                
+                dist_tr = distance_trackRecord(lines); 
                 
                 //Race Track Data
-                sb.append("Race Num:" + raceNumber(lines) + ",");
-                sb.append("Track Type:" + trackType(lines) + ",");
-                sb.append("Weather:" + weather(lines) + ",");
-                dist_tr = distance_trackRecord(lines);                      //True Double
-                sb.append("Dist:" + dist_tr[0] + ",");
-                sb.append("Condition:" + trackCondition(lines) + ",");
-                sb.append("Track Record:" + dist_tr[1] + ",");
-                sb.append("Final Time:" + final_time(lines) + ",");
-                sb.append('\n'); 
+                race_constants.add(date); 
+                race_constants.add(raceNumber(lines)); 
+                race_constants.add(trackType(lines)); 
+                race_constants.add(weather(lines)); 
+                race_constants.add(dist_tr[0]);
+                race_constants.add(trackCondition(lines)); 
+                race_constants.add(dist_tr[1]); 
+                race_constants.add(final_time(lines));
+                //sb.append("Race Num:" + raceNumber(lines) + ",");
+                //sb.append("Track Type:" + trackType(lines) + ",");
+                //sb.append("Weather:" + weather(lines) + ",");
+                //sb.append("Dist:" + dist_tr[0] + ",");
+                //sb.append("Condition:" + trackCondition(lines) + ",");
+                //sb.append("Track Record:" + dist_tr[1] + ",");
+                //sb.append("Final Time:" + final_time(lines) + ",");
+                //sb.append('\n'); 
                 
                 ArrayList<ArrayList<String>> racerData = racerData(lines); //MAIN DATA
                 for (int j = 0; j < racerData.size(); j++)
@@ -117,24 +133,47 @@ public class DATA_ORGANIZATION
                 }
                 
                 String numHorses = sNumOfHorses;
-                if(WRTITE_TO_CSV) writeToCSV(DATA);
+                if(WRTITE_TO_CSV) writeToCSV(DATA, race_constants);
             }
         } 
         if(WRTITE_TO_CSV) System.out.println("Finished Writing to CSV");
         else System.out.println("You have opted not to write to CSV file");
+        
+        //Processing Statistics
+        end_time = System.currentTimeMillis();
+        exec_time = end_time - start_time/1000; //ms to s
+        String t_diff = exec_time + "";
+        if(REPORT_PROCESSING_STATS)
+        {
+            System.out.println("Total Execution Time: " + t_diff +"(s)");
+        }
     }
     
-    public void writeToCSV(ArrayList<ArrayList<String>> DATA)
+    public void init_write_to_CSV()
+    {
+        //Race Constants
+        sb.append("Date,"); sb.append("Race Num,"); sb.append("Track Type,"); sb.append("Weather,"); sb.append("Dist,"); sb.append("Condition,"); 
+        sb.append("Track Record,"); sb.append("Final Time,");
+        
+        sb.append("Last_Race,"); sb.append("Past_Race,"); sb.append("Past_Track,");  sb.append("Past_Pos,"); sb.append("Pgm,");
+        sb.append("Horse,"); sb.append("Jockey,");  sb.append("Weight,"); sb.append("M/E,"); sb.append("PP,"); sb.append("Finish (Place^Dist),");
+        sb.append("Odds,"); sb.append("Fav,"); sb.append("Comments,"); sb.append('\n');
+    }
+    
+    public void writeToCSV(ArrayList<ArrayList<String>> DATA, ArrayList<String> CONSTANTS)
     {
         try (PrintWriter writer = new PrintWriter(new File("DATA.csv"))) 
         {
-            sb.append("Last_Race,"); sb.append("Past_Race,"); sb.append("Past_Track,");  sb.append("Past_Pos,"); sb.append("Pgm,");
-            sb.append("Horse,"); sb.append("Jockey,");  sb.append("Weight,"); sb.append("M/E,"); sb.append("PP,"); sb.append("Finish (Place^Dist),");
-            sb.append("Odds,"); sb.append("Fav,"); sb.append("Comments,"); sb.append('\n');
+            
             
             for(int i = 0; i < DATA.size(); i++)
             {
                 ArrayList<String> writeData = DATA.get(i);
+                for(int j = 0; j < CONSTANTS.size(); j++)
+                {
+                    sb.append(CONSTANTS.get(j));
+                    sb.append(','); 
+                }
                 for(int j = 0; j < writeData.size(); j++)
                 {
                     sb.append(writeData.get(j));
